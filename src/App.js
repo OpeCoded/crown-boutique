@@ -8,7 +8,7 @@ import HomePage from "./pages/homepage/homepage.component";
 import ShopPage from "./pages/shop/shop.component";
 import SignInAndSignUpPage from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
 import Header from "./components/header/header.component";
-import { auth } from "./firebase/firebase.utils";
+import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
 
 class App extends React.Component {
   constructor() {
@@ -16,30 +16,45 @@ class App extends React.Component {
     //here we are storing our auth state, note this is now a App class not a fucntion
     this.state = {
       currentUser: null
-    }
+    };
   }
 
   //Unsubscribing
-unsubscribeFromAuth = null
+  unsubscribeFromAuth = null;
   //Subcribing...we are fetching data from firebase here to check when a user is logged in
   componentDidMount() {
     //open subscription..its an open messaging system between our application and our firebase at whenever any changes occur
-    this.unsubscribeFromAuth = auth.onAuthStateChanged(user => {
-      this.setState({ currentUser: user });
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      //when a user is signed in
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
 
-      console.log(user);
-    })
+        userRef.onSnapshot(snapShot => {
+          //storing the user object data in our state
+          this.setState({
+            currentUser: {
+              id: snapShot.id,
+              ...snapShot.data()
+            }
+          });
+          console.log(this.state);
+        });
+      } else {
+        //when the user auth is null, i.e user signed out
+        this.setState({ currentUser: userAuth });
+      }
+    });
   }
 
-componentWillUnmount() {
-  //closes the subscription
-  this.unsubscribeFromAuth();
-}
+  componentWillUnmount() {
+    //closes the subscription
+    this.unsubscribeFromAuth();
+  }
 
   render() {
     return (
       <div>
-        <Header currentUser={this.state.currentUser}/>
+        <Header currentUser={this.state.currentUser} />
         {/* if switch sees a route that does not have exact attribute, it will render only the route that match / */}
         <Switch>
           <Route exact path="/" component={HomePage} />
