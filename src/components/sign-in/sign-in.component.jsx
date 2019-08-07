@@ -4,7 +4,7 @@ import FormInput from "../form-input/form-input.component";
 
 import CustomButton from "../custom-button/custom-button.component";
 
-import { signInWithGoogle } from "../../firebase/firebase.utils";
+import { auth, signInWithGoogle } from "../../firebase/firebase.utils";
 
 import "./sign-in.styles.scss";
 
@@ -19,12 +19,22 @@ class SignIn extends React.Component {
     };
   }
 
-  handleSubmit = event => {
+  //triggers when the submit button is clicked
+  handleSubmit = async event => {
     event.preventDefault();
 
-    //clearing the fields after the user clicks submit
-    //setting email and password field to an empty string when the onsubmit is called
-    this.setState({ email: "", password: "" });
+    //destructure off the email and password off our state
+    const { email, password } = this.state;
+
+    //signing in with email and password
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      //clearing the fields after the user clicks submit
+      //setting email and password field to an empty string when the onsubmit is called
+      this.setState({ email: "", password: "" });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   //this is fired when the user starts typing
