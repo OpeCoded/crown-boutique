@@ -1,6 +1,6 @@
 // THIS FILE IS THE MAIN REPRESENTATION OF OUR APP IN THE FORM OF ROUTES AND COMPONENTS
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 //connect allows to modify states or update states
 import { connect } from "react-redux";
 import "./App.css";
@@ -19,7 +19,7 @@ class App extends React.Component {
   //Subcribing...we are fetching data from firebase here to check when a user is logged in
   componentDidMount() {
     //destructuring setCurrentUser so that we can just type setCurrentUser instead of this.props.set....
-    const {setCurrentUser} = this.props;
+    const { setCurrentUser } = this.props;
 
     //open subscription..its an open messaging system between our application and our firebase at whenever any changes occur
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
@@ -30,11 +30,11 @@ class App extends React.Component {
         userRef.onSnapshot(snapShot => {
           //storing the user object data in our state
           setCurrentUser({
-              id: snapShot.id,
-              ...snapShot.data()
-            });
+            id: snapShot.id,
+            ...snapShot.data()
           });
-          //console.log(this.state);
+        });
+        //console.log(this.state);
       } else {
         //when the user auth is null, i.e user signed out
         setCurrentUser(userAuth);
@@ -55,20 +55,35 @@ class App extends React.Component {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/shop" component={ShopPage} />
-          <Route path="/signin" component={SignInAndSignUpPage} />
+          <Route
+            exact
+            path="/signin"
+            render={() =>
+              this.props.currentUser ? (
+                <Redirect to="/" />
+              ) : (
+                <SignInAndSignUpPage />
+              )
+            }
+          />
         </Switch>
       </div>
     );
   }
 }
+//getting the current user from our redux state for redirect after login
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser
+});
 
 //mapDispatchToProps...This updates our app component so that it's able to update the reducer value with the new set current user action
-//this gets a prop called dispatch and returns an object where the prop name will be whatever prop we want to pass in that dispatches the new action which is set current user 
+//this gets a prop called dispatch and returns an object where the prop name will be whatever prop we want to pass in that dispatches the new action which is set current user
 const mapDispatchToProps = dispatch => ({
-//this is what will be returned => this is an action object (user) from user.action.js which will be passed to every reducer
+  //this is what will be returned => this is an action object (user) from user.action.js which will be passed to every reducer
   setCurrentUser: user => dispatch(setCurrentUser(user))
 });
+
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(App);
