@@ -3,13 +3,18 @@ import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 //connect allows to modify states or update states
 import { connect } from "react-redux";
+
+import { createStructuredSelector } from 'reselect';
 import "./App.css";
 
 import HomePage from "./pages/homepage/homepage.component";
 import ShopPage from "./pages/shop/shop.component";
 import SignInAndSignUpPage from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
+import CheckoutPage from './pages/checkout/checkout.component';
 import Header from "./components/header/header.component";
 import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
+
+import {selectCurrentUser} from './redux/user/user.selectors';
 //allows us to have access to setCurrentUser prop
 import { setCurrentUser } from "./redux/user/user.actions";
 
@@ -55,6 +60,7 @@ class App extends React.Component {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/shop" component={ShopPage} />
+          <Route exact path="/checkout" component={CheckoutPage} />
           <Route
             exact
             path="/signin"
@@ -72,8 +78,8 @@ class App extends React.Component {
   }
 }
 //getting the current user from our redux state for redirect after login
-const mapStateToProps = ({ user }) => ({
-  currentUser: user.currentUser
+const mapStateToProps = createStructuredSelector ({
+  currentUser: selectCurrentUser
 });
 
 //mapDispatchToProps...This updates our app component so that it's able to update the reducer value with the new set current user action
