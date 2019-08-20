@@ -1,10 +1,15 @@
 //applyMiddleware recieves actions and logs it or display them for us and pass it to the root reducer
 import { createStore, applyMiddleware } from "redux";
+//allows our browser to actually cache our store (local storage and session)
+import { persistStore } from 'redux-persist';
 import logger from "redux-logger";
 import rootReducer from "./root-reducer";
 
 const middlewares = [logger];
 
-const store = createStore(rootReducer, applyMiddleware(...middlewares));
+export const store = createStore(rootReducer, applyMiddleware(...middlewares));
 
-export default store;
+//this is a persisted version of our store above...we will now use the two to wrap our app
+export const persistor = persistStore(store);
+
+export default {store, persistor};
