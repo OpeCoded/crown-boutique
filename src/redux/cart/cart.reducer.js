@@ -26,13 +26,13 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         ...state,
         cartItems: addItemToCart(state.cartItems, action.payload)
       };
-      //for removing and reducing quantity in checkout page
-      case CartActionTypes.REMOVE_ITEM:
-        return {
-          ...state,
-          //we check if there is an existing cart item, check if the quantity is 1 so that we can remove it and if it is more than 1 we can decrease
-          cartItems: removeItemFromCart(state.cartItems, action.payload)
-        }
+    //for removing and reducing quantity in checkout page
+    case CartActionTypes.REMOVE_ITEM:
+      return {
+        ...state,
+        //we check if there is an existing cart item, check if the quantity is 1 so that we can remove it and if it is more than 1 we can decrease
+        cartItems: removeItemFromCart(state.cartItems, action.payload)
+      };
     //for removing item from cart
     case CartActionTypes.CLEAR_ITEM_FROM_CART:
       return {
@@ -41,6 +41,11 @@ const cartReducer = (state = INITIAL_STATE, action) => {
         cartItems: state.cartItems.filter(
           cartItem => cartItem.id !== action.payload.id
         )
+      };
+    case CartActionTypes.CLEAR_CART:
+      return {
+        ...state,
+        cartItems: []
       };
 
     //now returns the new state as default

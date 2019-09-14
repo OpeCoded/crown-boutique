@@ -25,6 +25,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
     const createdAt = new Date();
 
     try {
+      //creating a new user using .set
       await userRef.set({
         displayName,
         email,
@@ -38,12 +39,65 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   return userRef;
 };
 
+//utils for adding collections into the database, so we will call addCollectionAndDocuments where we have access to our shop data, we will use App.js
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd
+) => {
+  //we used this to create a batch collection in the db programmaticaly
+  //creating the collection (firestore.collection) using the collection key
+  //note: firebase will give us a collection ref object back
+  const collectionRef = firestore.collection(collectionKey);
+
+  const batch = firestore.batch();
+  objectsToAdd.forEach(obj => {
+    const newDocRef = collectionRef.doc();
+    batch.set(newDocRef, obj);
+  });
+
+  return await batch.commit();
+};
+
+//this function gets the whole collections snapshot from our db in form of array, then
+//we convert it to a map
+export const convertCollectionsSnapshotToMap = collections => {
+  //we want to modify or transform our doc objects into a useable form (map)
+  const transformedCollection = collections.docs.map(doc => {
+    //pulling off the title and item from the map
+    const { title, items } = doc.data();
+
+    //we are returning an actual object from the map, that reps the final object representing all the data we want for our front end
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items
+    };
+  });
+  //now we are converting the object map (to the way we want it to look in our app) inside of our reducer
+  return transformedCollection.reduce((accumulator, collections) => {
+    //we pass in an initial object ie {}, which goes into the first new collection [key] in lowercase
+    //and returns the object...the object in this case is accumulator
+    accumulator[collections.title.toLowerCase()] = collections;
+    return accumulator;
+  }, {});
+};
+
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(userAuth => {
+      unsubscribe();
+      resolve(userAuth);
+    }, reject);
+  });
+};
+
 firebase.initializeApp(config);
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
-const provider = new firebase.auth.GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
-export const signInWithGoogle = () => auth.signInWithPopup(provider);
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
 export default firebase;
