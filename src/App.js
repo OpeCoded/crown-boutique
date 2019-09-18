@@ -1,5 +1,5 @@
 // THIS FILE IS THE MAIN REPRESENTATION OF OUR APP IN THE FORM OF ROUTES AND COMPONENTS
-import React from "react";
+import React, { useEffect } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 //connect allows to modify states or update states
 import { connect } from "react-redux";
@@ -23,45 +23,31 @@ import { selectCurrentUser } from "./redux/user/user.selectors";
 //allows us to have access to setCurrentUser prop
 // import { setCurrentUser } from "./redux/user/user.actions";
 
-class App extends React.Component {
-  //Unsubscribing
-  unsubscribeFromAuth = null;
-  //Subcribing...we are fetching data from firebase here to check when a user is logged in
-  componentDidMount() {
-    const { checkUserSession } = this.props;
+const App = ({ checkUserSession, currentUser }) => {
+  useEffect(() => {
     checkUserSession();
-  }
+  }, [checkUserSession]);
 
-  componentWillUnmount() {
-    //closes the subscription
-    this.unsubscribeFromAuth();
-  }
+  return (
+    <div>
+      <Header /*currentUser={this.state.currentUser}*/ />
+      {/* if switch sees a route that does not have exact attribute, it will render only the route that match / */}
+      <Switch>
+        <Route exact path="/" component={HomePage} />
+        <Route path="/shop" component={ShopPage} />
+        <Route exact path="/checkout" component={CheckoutPage} />
+        <Route
+          exact
+          path="/signin"
+          render={() =>
+            currentUser ? <Redirect to="/" /> : <SignInAndSignUpPage />
+          }
+        />
+      </Switch>
+    </div>
+  );
+};
 
-  render() {
-    return (
-      <div>
-        <Header /*currentUser={this.state.currentUser}*/ />
-        {/* if switch sees a route that does not have exact attribute, it will render only the route that match / */}
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route path="/shop" component={ShopPage} />
-          <Route exact path="/checkout" component={CheckoutPage} />
-          <Route
-            exact
-            path="/signin"
-            render={() =>
-              this.props.currentUser ? (
-                <Redirect to="/" />
-              ) : (
-                <SignInAndSignUpPage />
-              )
-            }
-          />
-        </Switch>
-      </div>
-    );
-  }
-}
 //getting the current user from our redux state for redirect after login
 const mapStateToProps = createStructuredSelector({
   currentUser: selectCurrentUser

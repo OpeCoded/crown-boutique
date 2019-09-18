@@ -13,7 +13,7 @@ const CollectionPage = ({ collection }) => {
   return (
     <div className="collection-page">
       <h2 className="title">{title}</h2>
-      <div className='items'>
+      <div className="items">
         {items.map(item => (
           <CollectionItem key={item.id} item={item} />
         ))}
@@ -26,3 +26,16 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 export default connect(mapStateToProps)(CollectionPage);
+
+//componentWillUnmount() using useEffect
+// useEffect(() => {
+//   console.log("I am subscribing");
+//   const unsubscribeFromCollections = firestore
+//     .collectons("collections")
+//     .onSnapshot(snapshot => console.log(snapshot));
+
+//   return () => {
+//     console.log("I am unsubscribing");
+//     unsubscribeFromCollections();
+//   };
+// }, []);
